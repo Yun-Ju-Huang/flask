@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Flow</title>
+</head>
+<body>
+{% if url_input == '' %}
+<ul>
+{% for drink in drinks %}
+<li>{{ drink }}</li>
+{% endfor %}
+</ul>
+{% else %}
+<br>Your input is {{ url_input|upper }}
+{% if ( (url_input|int < 4) and (url_input|int >= 0) ) %}
+<br> It's {{ drinks[url_input|int] }}
+{% else %}
+<br>Your inout is error !
+<br>Please input form 0 to 3
+{% endif %}
+{% endif %}
