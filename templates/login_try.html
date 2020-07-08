@@ -11,6 +11,7 @@
 <link href='https://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/jquery.validate.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<a href="/home" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">回主頁</a>
 
 <!-- Where all the magic happens -->
 <!-- LOGIN FORM -->
@@ -18,13 +19,14 @@
 	<div class="logo">登入</div>
 	<!-- Main Form -->
 	<div class="login-form-1">
-		<form id="login-form" class="text-left">
+		<form id="login-form" class="text-left" method='post' action="/login">
 			<div class="login-form-main-message"></div>
 			<div class="main-login-form">
 				<div class="login-group">
 					<div class="form-group">
 						<label for="lg_username" class="sr-only">＊＊會員帳號＊＊</label>
-						<input type="text" class="form-control" id="lg_username" name="lg_username" placeholder="username">
+						<input type="text" class="form-control" id="lg_username" name="aausername" placeholder="username">
+<!--						<button type='submit'>Submit</button>-->
 					</div>
 					<div class="form-group">
 						<label for="lg_password" class="sr-only">＊＊會員密碼＊＊</label>
@@ -35,10 +37,12 @@
 						<label for="lg_remember">記住我</label>
 					</div>
 				</div>
-					<button type="submit" class="login-button"><a href="/create"></a><i class="fa fa-chevron-right"></i></button>
+					<button type="submit" class="login-button"><i class="fa fa-chevron-right"></i></button>
+
+<!--					<a href="/home" class="login-button" role="button" ><i class="fa fa-chevron-right"></i></a>-->
 			</div>
 			<div class="etc-login-form">
-				<p>忘記密碼 <a href="#">click here</a></p>
+				<p>忘記密碼 <a href="/click">click here</a></p>
 				<p>註冊新會員 <a href="/create">create new account</a></p>
 			</div>
 		</form>

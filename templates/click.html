@@ -11,6 +11,7 @@
 <link href='https://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/jquery.validate.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<a href="/home" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">回主頁</a>
 
 <!-- Where all the magic happens -->
 <!-- LOGIN FORM -->
@@ -51,17 +52,18 @@
 	<div class="logo">忘記密碼</div>
 	<!-- Main Form -->
 	<div class="login-form-1">
-		<form id="register-form" class="text-left">
+		<form id="register-form" class="text-left" method='post' action="/click">
 			<div class="login-form-main-message"></div>
 			<div class="main-login-form">
 				<div class="login-group">
 					<div class="form-group">
 						<label for="reg_username" class="sr-only">請輸入信箱</label>
-						<input type="text" class="form-control" id="reg_username" name="reg_username" placeholder="username">
+						<input type="text" class="form-control" id="reg_username" name="nname" placeholder="username">
 					</div>
 
 				</div>
 				<button type="submit" class="login-button"><i class="fa fa-chevron-right"></i></button>
+<!--				<a href="/home" class="login-button" role="button" ><i class="fa fa-chevron-right"></i></a>-->
 			</div>
 			<div class="etc-login-form">
 				<p>已有帳戶 <a href="/login">login here</a></p>
