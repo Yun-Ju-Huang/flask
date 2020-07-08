@@ -1,4 +1,4 @@
-from flask import Flask, render_template,request
+from flask import Flask, render_template,request,redirect,url_for
 import re
 app=Flask(__name__)
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1
@@ -76,26 +76,47 @@ def daily_record():
         return "填寫完成"   # 本日攝取頁面
     return render_template('daily_record.html')
 
-@app.route('/survey', methods=['GET', 'POST'])
+
+@app.route("/survey", methods=['GET', 'POST'])
 def survey():
-    name = []
-    sex = []
-    age = []
-    height = []
-    weight = []
-    target = []
-    if request.method == 'POST':
-        name.append(request.form.get("user"))
-        sex.append(request.form.get("sex"))
-        age.append(request.form.get("age"))
-        height.append(request.form.get("height"))
-        weight.append(request.form.get("weight"))
-        target.append(request.form.get(("target"))
-        print(name,sex)
+    if request.method == "POST":
+        user = request.form.get("user")
+        sex = request.form.get("sex")
+        age = request.form.get("age")
+        height = request.form.get("height")
+        weight = request.form.get("weight")
+        target = request.form.get("target")
+        outside("survey", user, sex, age, height, weight, target)
+        return redirect(url_for("survey2"))
+    return render_template("survey.html")
 
+@app.route("/survey2", methods=['GET', 'POST'])
+def survey2():
+    if request.method == "POST":
+        daily_activity = request.form.get("daily_activity")
+        daily_sport = request.form.get("daily_sport")
+        sport_freq = request.form.get("sport_freq")
+        eat_condition = request.form.get("eat_condition")
+        eatingout_freq = request.form.get("eatingout_freq")
 
+        not_eat_list = []
+        for num in range(1,7):
+            ne_item = "not_eat0{}".format(num)
+            if request.form.get(ne_item) != None:
+                not_eat_list.append(request.form.get(ne_item))
 
-    return render_template('survey.html')
+        sleep_condition = request.form.get("sleep_condition")
+        mental_condition = request.form.get("mental_condition")
+        defecation_condition = request.form.get("defecation_condition")
+        outside("survey2", daily_activity, daily_sport, sport_freq, eat_condition, eatingout_freq, not_eat_list, sleep_condition, mental_condition,
+                defecation_condition)
+        return render_template('thanks.html')
+
+    return render_template('survey2.html')
+
+@app.route("/survey/thanks", methods=['GET', 'POST'])
+def thanks():
+    return render_template('thanks.html')
 
 ## 輸出到sql用的函式
 def outside(what, *args):
