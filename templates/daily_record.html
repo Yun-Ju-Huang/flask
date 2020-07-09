@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <title>Bootstrap Example</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+      <style>
+        table, td {
+          border: 1px solid black;
+        }
+      </style>
+
+
+    </head>
+    <body>
+    <div class="container">
+      <h2>每日飲食紀錄表：</h2>
+      <br>
+      <form method="post" action="/daily_record">
+        <table id="myTable" style="border:3px #cccccc solid;" cellpadding="10" border="1">
+            <th>您吃了什麼？</th>
+            <th>大約幾克呢？</th>
+            <th>時間：</th>
+
+
+            <tr>
+                <td><input type="text" id="txtfood" name="food"/></td>
+                <td><input type="text" id="txtgram" name="gram"/></td>
+                <td><input type="datetime-local" id="txttime" name="time"/></td>
+
+            </tr>
+
+        </table>
+        <br>
+        <button type="button" id="btnAdd" class="btn btn-primary" onclick="insertRow()">Add</button>
+        <button type="button" id="btnDelete" class="btn btn-primary" onclick="deleteRow()">Delete</button>
+        <button type="reset" class="btn btn-primary">Reset</button>
+
+
+        <div class="form-group">
+          <br>
+          <label for="drink_water">今日飲水量： (毫升)</label>
+          <input type="text" class="form-control" id="drink_water" placeholder="How much water do you drink today? (ml)" name="drink_water" aria-describedby="inputGroupPrepend" required>
+        </div>
+
+
+        <button type="submit" class="btn btn-primary">Finish</button>
+        <script type="text/javascript">
+
+        var index = 1;
+        function insertRow(){
+                    var table=document.getElementById("myTable");
+                    var row=table.insertRow(table.rows.length);
+
+                    var cell1=row.insertCell(0);
+                    var t1=document.createElement("input");
+                        t1.id = "txtfood"+index;
+                        t1.name = "food"+index;
+                        cell1.appendChild(t1);
+
+                    var cell2=row.insertCell(1);
+                    var t2=document.createElement("input");
+                        t2.id = "txtgram"+index;
+                        t2.name = "gram"+index;
+                        cell2.appendChild(t2);
+
+                    var cell3=row.insertCell(2);
+                    var t3=document.createElement("input");
+                        t3.id = "txttime"+index;
+                        t3.type = "datetime-local";
+                        t3.name = "time"+index;
+                        cell3.appendChild(t3);
+
+              index++;
+
+        }
+        function deleteRow() {
+        if (index > 1) {
+            document.getElementById("myTable").deleteRow(index);
+            index--;
+            }
+        }
+
+
+        </script>
+
+
+
+      </form>
+    </div>
+    </body>
+</html>
