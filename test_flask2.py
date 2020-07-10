@@ -5,6 +5,7 @@ import pymysql
 import sql_acount
 import to_sql
 
+
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
 
