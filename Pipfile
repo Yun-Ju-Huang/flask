@@ -13,6 +13,9 @@ verify_ssl = true
 "flask_bootstrap"='*'
 "sqlalchemy" = '*'
 'flask_login'='*'
+'line-bot-sdk'='*'
+'LineBotApi' = '*'
+
 
 
 [requires]

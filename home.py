@@ -4,6 +4,14 @@ from flask_bootstrap import Bootstrap
 import pymysql
 import sql_acount
 import to_sql
+from linebot.models import  FollowEvent
+from linebot import (LineBotApi, WebhookHandler)
+from linebot.exceptions import InvalidSignatureError, LineBotApiError
+from linebot.models import *
+line_bot_api = LineBotApi("ogY/QwEyP94ykKZ4sMrnOBHw6b1nMKbB+0iZg18CCHIuCM9+tL5nOCgex/eT+Dl/jHoaIDzCtOz44mYC5gGvIGms6PI7jf28rssJxe3EsLHZMXv5dxhmWiHzOENlC25TaAfCYbgwwcGFqj4ppWN+CgdB04t89/1O/w1cDnyilFU=")  # 在 line_developer取得)
+handler = WebhookHandler('14ef07f28bb5ea35f6246d42be24d2eb')
+
+
 
 app=Flask(__name__)
 # app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1
@@ -20,6 +28,7 @@ cursor = connection.cursor()        # 可以把這當作操作MySQL時，你的�
 
 ## 登入後的會員Email
 user_email = {}
+lineid = ''
 
 ##連接到HOME
 @app.route('/')
@@ -219,7 +228,24 @@ def outside_daily(daily_data):
 def outside_new_account(email):
     print(email)
     to_sql.insersql_new_account(email)
-    to_sql.SQLcommit("insert")
+    to_sql.SQLcommit("insert")\
+
+
+@handler.add(FollowEvent)
+def cheak_lineid(event):
+    lineid = line_bot_api.get_profile(event.source.user_id)
+    cheak_line = to_sql.check_survey_lineid(lineid)
+    msg = 'True'
+    if cheak_line == "exist":
+        print(cheak_line)
+        return render_template('login_try.html')
+    else:
+        to_sql.insersql_new_line_account(cheak_line)
+
+        return render_template('login_try.html')
+
+
+
 
 
 

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9f940467d0ca5cb743e5f666414f5b1f11a807e3b4a5c3f9c5b2fa6ec5713edf"
+            "sha256": "f46bbbcd8873d01d789a15476542d6896de6ae6333ac5b70ccfc2edcc38c067b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -123,6 +123,13 @@
             "index": "pypi",
             "version": "==0.5.0"
         },
+        "future": {
+            "hashes": [
+                "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"
+            ],
+            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "version": "==0.18.2"
+        },
         "idna": {
             "hashes": [
                 "sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6",
@@ -232,6 +239,14 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
             "version": "==4.6.3"
+        },
+        "line-bot-sdk": {
+            "hashes": [
+                "sha256:3f665300d38e66c06446095e529dcb3415cd448d17ecadd8535428c79ca0a912",
+                "sha256:5779bdcd807137ab31e03a448d2639b21e3b372ceb6e6ed3d6cc7257e952b7f0"
+            ],
+            "index": "pypi",
+            "version": "==1.16.0"
         },
         "markupsafe": {
             "hashes": [
