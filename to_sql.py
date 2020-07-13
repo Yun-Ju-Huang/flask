@@ -33,17 +33,7 @@ def check_survey_email(email):
     except TypeError:
         return "no exist"
 
-def check_survey_lineid(lineid):
-    try:
-        sql = f"""
-        SELECT line_id FROM i_member.test1 WHERE line_id = "{lineid}" ;
-        """
-        cursor = connection.cursor()    # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
-        cursor.execute(sql)             # 執行 SQL 指令
-        check = cursor.fetchone()[0]    # 判斷 m_id 是否存在
-        return "exist"
-    except TypeError:
-        return "no exist"
+
 
 def check_survey_mid(m_id):
     try:
@@ -154,21 +144,6 @@ def insersql_new_account(email):
     print("myuser  successfully")
 
 
-
-def insersql_new_line_account(cheak_line):
-        sql = '''
-        SELECT m_id FROM i_member.test1 order by m_id desc limit 1'''
-        cursor = connection.cursor()  # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
-        cursor.execute(sql)  # 執行 SQL 指令，此時指令還處在暫存狀態，因為尚未 commit
-        m_id = cursor.fetchone()[0]  # 執行 SQL 指令，從 SQL 獲取 m_id
-        # print(m_id)
-        new_m_id = "M" + str(int(m_id.strip("M")) + 1)
-        sql2 = f'''INSERT INTO i_member.test1 
-        (m_id, cheak_line)
-        VALUES
-        ("{new_m_id}", "{cheak_line}");'''
-        cursor.execute(sql2)  # 執行 SQL 指令，此時 INSERT 指令還處在暫存狀態，因為尚未 commit
-        print("myuser  successfully")
 
 
 def insertsql_survey(m_id, data):

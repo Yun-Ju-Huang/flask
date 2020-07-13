@@ -15,6 +15,13 @@ verify_ssl = true
 'flask_login'='*'
 'line-bot-sdk'='*'
 'LineBotApi' = '*'
+"keras" ='==2.4.2'
+"pillow" = '*'
+"matplotlib" = '*'
+"pandas" = '*'
+"opencv-python" = '*'
+"pencv-contrib-python" = '*'
+"tensorflow" = '==2.1.0'
 
 
 
