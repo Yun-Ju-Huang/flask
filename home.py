@@ -277,23 +277,23 @@ def kibana_week():
 @app.route('/recom')
 def recom():
     recommend = to_sql.select_5()
-    R_id=[]
-    RecipeName=[]
-    RecipeURL=[]
-    RecipeImageURL=[]
-    for recomm in recommend:
-        R_id.append(recomm[0])
-        RecipeName.append(recomm[1])
-        RecipeURL.append(recomm[2])
-        RecipeImageURL.append(recomm[3])
+    # R_id=[]
+    # RecipeName=[]
+    # RecipeURL=[]
+    # RecipeImageURL=[]
+    # for recomm in recommend:
+    #     R_id.append(recomm[0])
+    #     RecipeName.append(recomm[1])
+    #     RecipeURL.append(recomm[2])
+    #     RecipeImageURL.append(recomm[3])
 
 
-    # return render_template('recom.html',username=["email"],value=aa)
+    return render_template('recom.html', username=user_email["email"] ,value=recommend)
 
 # templates/showcar.html
 # user_email["email"]
 #
-recom()
+# recom()
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True,port=port,host="0.0.0.0")
