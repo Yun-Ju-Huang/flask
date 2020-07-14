@@ -12,13 +12,13 @@ app=Flask(__name__)
 bootstrap = Bootstrap(app)
 
 ## 連接資料庫
-host = "35.229.172.113"             # GCP Cloud SQL 的 IP
-port = 3306                         # MySQL 的 Port
-user = sql_acount.login()[0]        # 帳號存放在另外的位置
-password = sql_acount.login()[1]    # 密碼存放在另外位置
-db = "i_member"                     # 選擇在 MySQL 上你操作時要用的 DataBase
-connection = pymysql.connect(host=host, port=port, user=user, passwd=password, db=db, charset="utf8")   # 搭起 GCP Cloud SQL(MySQL) 橋梁
-cursor = connection.cursor()        # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
+# host = "35.229.172.113"             # GCP Cloud SQL 的 IP
+# port = 3306                         # MySQL 的 Port
+# user = sql_acount.login()[0]        # 帳號存放在另外的位置
+# password = sql_acount.login()[1]    # 密碼存放在另外位置
+# db = "i_member"                     # 選擇在 MySQL 上你操作時要用的 DataBase
+# connection = pymysql.connect(host=host, port=port, user=user, passwd=password, db=db, charset="utf8")   # 搭起 GCP Cloud SQL(MySQL) 橋梁
+cursor = sql_acount.acount2()        # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
 
 ## 登入後的會員Email
 user_email = {}
