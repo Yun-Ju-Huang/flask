@@ -76,7 +76,7 @@ def login_try2():
             return "請輸入正確信箱!!" + render_template('login_try2.html')
     return render_template('login_try2.html')
 
-##登入頁面用在line+每日問卷
+##登入頁面用在line+每日飲食
 @app.route('/login_try3',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try3():
     if request.method == 'POST':
