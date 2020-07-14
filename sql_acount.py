@@ -23,4 +23,5 @@ def acount2():  # 套件 pymysql 時使用
 def login():
     user = "food2"
     password = "1234"
-    return user, password
+    host = "35.229.172.113"
+    return user, password, host

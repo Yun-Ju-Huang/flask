@@ -12,12 +12,6 @@ app=Flask(__name__)
 bootstrap = Bootstrap(app)
 
 ## 連接資料庫
-# host = "35.229.172.113"             # GCP Cloud SQL 的 IP
-# port = 3306                         # MySQL 的 Port
-# user = sql_acount.login()[0]        # 帳號存放在另外的位置
-# password = sql_acount.login()[1]    # 密碼存放在另外位置
-# db = "i_member"                     # 選擇在 MySQL 上你操作時要用的 DataBase
-# connection = pymysql.connect(host=host, port=port, user=user, passwd=password, db=db, charset="utf8")   # 搭起 GCP Cloud SQL(MySQL) 橋梁
 cursor = sql_acount.acount2()        # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
 
 ## 登入後的會員Email
@@ -58,6 +52,8 @@ def login_try():
         else:
             return "請輸入正確信箱!!" + render_template('login_try.html')
     return render_template('login_try.html')
+
+
 ##登入頁面用在line+問卷
 @app.route('/login_try2',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try2():
@@ -132,7 +128,9 @@ def click():
 ##連接到推薦頁面
 @app.route('/recommend')
 def recommend():
-    return render_template('recommend.html')
+    recommend = to_sql.select_5()
+    return render_template('recommend.html', value=recommend, username=user_email["email"])
+
 
 ## 儲存會員的問卷資料 {s1:(), s2:()}
 survey_data = {}
@@ -274,26 +272,12 @@ def kibana_week():
     return "hello!!"
 
 
-@app.route('/recom')
-def recom():
-    recommend = to_sql.select_5()
-    # R_id=[]
-    # RecipeName=[]
-    # RecipeURL=[]
-    # RecipeImageURL=[]
-    # for recomm in recommend:
-    #     R_id.append(recomm[0])
-    #     RecipeName.append(recomm[1])
-    #     RecipeURL.append(recomm[2])
-    #     RecipeImageURL.append(recomm[3])
 
 
-    return render_template('recom.html', username=user_email["email"] ,value=recommend)
 
-# templates/showcar.html
-# user_email["email"]
-#
-# recom()
+
+
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True,port=port,host="0.0.0.0")
+    # port = int(os.environ.get('PORT', 5000))
+    # app.run(debug=True,port=port,host="0.0.0.0")
+    app.run(debug=True)

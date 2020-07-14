@@ -3,7 +3,7 @@ import re
 import sql_acount
 
 ## 連接資料庫
-host = "35.229.172.113"             # GCP Cloud SQL 的 IP
+host = sql_acount.login()[2]            # GCP Cloud SQL 的 IP
 port = 3306                         # MySQL 的 Port
 user = sql_acount.login()[0]        # 帳號存放在另外的位置
 password = sql_acount.login()[1]    # 密碼存放在另外位置
@@ -255,19 +255,14 @@ def SQLcommit(sqlmode):
 
 
 
-
-
-
-
-#隨機抽取5筆
+# 隨機抽取 3 筆
 def select_5():
     sql = """
-    SELECT * FROM i_nutrition.reciipe_StayUpLate_view ORDER BY RAND() LIMIT 5;
+    SELECT * FROM i_nutrition.reciipe_StayUpLate_view ORDER BY RAND() LIMIT 3;
     """
     cursor = connection.cursor()    # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
     cursor.execute(sql)             # 執行 SQL 指令，此時指令還處在暫存狀態，因為尚未 commit
     title = cursor.fetchall()       # 執行 SQL 指令，從 SQL 獲取 m_id
-
     return title
 
 
