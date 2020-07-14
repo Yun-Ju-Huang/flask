@@ -4,7 +4,7 @@ from flask_bootstrap import Bootstrap
 import pymysql
 import sql_acount
 import to_sql
-
+import pandas as pd
 
 
 app=Flask(__name__)
@@ -22,28 +22,26 @@ cursor = sql_acount.acount2()        # 可以把這當作操作MySQL時，你的
 
 ## 登入後的會員Email
 user_email = {}
-lineid = ''
 
 ##連接到HOME
 @app.route('/')
 def home():
-    return render_template('home_try.html')
+    return render_template('home_try.html')     #開啟home的HTML
 
 
-##連接到login in 頁面
-# @app.route('/login_try/success')
-# def success():
-#     user=user_email["email"]
-#     return render_template('success.html',username=user)
 
+##連接到success.home頁面
 @app.route('/success')
 def success():
-    user = user_email["email"]
-    return render_template('success.html', username=user)
+    user = user_email["email"]                              #用上面字典接住的username
+    return render_template('success.html', username=user)   #開啟success的頁面，並輸出username
 
+'''
+login_try 相關
+'''
 
-@app.route('/login_try',methods=['GET', 'POST'])
 ##連接到登入頁面
+@app.route('/login_try',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try():
     if request.method == 'POST':
         email= request.form.get("aausername")
@@ -60,6 +58,46 @@ def login_try():
         else:
             return "請輸入正確信箱!!" + render_template('login_try.html')
     return render_template('login_try.html')
+##登入頁面用在line+問卷
+@app.route('/login_try2',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
+def login_try2():
+    if request.method == 'POST':
+        email= request.form.get("aausername")
+        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):
+            check_email  = to_sql.check_survey_email(email)
+            if check_email == "exist":
+                user_email["email"] = request.form.get("aausername")
+                return  redirect(url_for('survey'))
+            else:
+
+                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + render_template('login_try2.html')
+
+        else:
+            return "請輸入正確信箱!!" + render_template('login_try2.html')
+    return render_template('login_try2.html')
+
+##登入頁面用在line+每日問卷
+@app.route('/login_try3',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
+def login_try3():
+    if request.method == 'POST':
+        email= request.form.get("aausername")
+        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):
+            check_email  = to_sql.check_survey_email(email)
+            if check_email == "exist":
+                user_email["email"] = request.form.get("aausername")
+                return  redirect(url_for('daily_record'))
+            else:
+
+                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + render_template('login_try3.html')
+
+
+        else:
+            return "請輸入正確信箱!!" + render_template('login_try3.html')
+    return render_template('login_try3.html')
+
+'''
+以上為login_try相關
+'''
 
 
 ##連接到註冊會員頁面
@@ -225,11 +263,37 @@ def outside_new_account(email):
     to_sql.SQLcommit("insert")\
 
 
+##連接到kibana(天)
+@app.route('/kibana/day')
+def kibana_day():
+     return "hello!!"
+
+##連接到kibana(周)
+@app.route('/kibana/week')
+def kibana_week():
+    return "hello!!"
 
 
+@app.route('/recom')
+def recom():
+    recommend = to_sql.select_5()
+    R_id=[]
+    RecipeName=[]
+    RecipeURL=[]
+    RecipeImageURL=[]
+    for recomm in recommend:
+        R_id.append(recomm[0])
+        RecipeName.append(recomm[1])
+        RecipeURL.append(recomm[2])
+        RecipeImageURL.append(recomm[3])
 
 
+    # return render_template('recom.html',username=["email"],value=aa)
 
+# templates/showcar.html
+# user_email["email"]
+#
+recom()
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True,port=port,host="0.0.0.0")

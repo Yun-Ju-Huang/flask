@@ -259,6 +259,17 @@ def SQLcommit(sqlmode):
 
 
 
+#隨機抽取5筆
+def select_5():
+    sql = """
+    SELECT * FROM i_nutrition.reciipe_StayUpLate_view ORDER BY RAND() LIMIT 5;
+    """
+    cursor = connection.cursor()    # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
+    cursor.execute(sql)             # 執行 SQL 指令，此時指令還處在暫存狀態，因為尚未 commit
+    title = cursor.fetchall()       # 執行 SQL 指令，從 SQL 獲取 m_id
+    print(title)
+    return title
+
 
 
 
