@@ -4,6 +4,9 @@ from flask_bootstrap import Bootstrap
 import pymysql
 import sql_acount
 import to_sql
+import kafkaProducer_newUser
+import kafkaProducer_dailyEat
+import recommend
 
 
 #起首式###############################################################################################################
@@ -258,11 +261,13 @@ def outside():
             to_sql.updatesql_survey(m_id, survey_data["s1"])    # 導入 自訂套件 to_sql 傳入問卷一的資料 UPDATE
             to_sql.updatesql_survey2(m_id, survey_data["s2"])   # 導入 自訂套件 to_sql 傳入問卷二的資料 UPDATE
             to_sql.SQLcommit("update")    # commit 在自訂套件 to_sql 中下的所有 SQL UPDATE 指令
+            kafkaProducer_newUser.to_kafka(m_id, survey_data["s1"])  # 導入自訂套件 kafkaProducer_newUser 傳入問卷一資料進 kafka
 
         elif check_result == "no exist":
             to_sql.insertsql_survey(m_id, survey_data["s1"])    # 導入 自訂套件 to_sql 傳入問卷一的資料 INSERT
             to_sql.insertsql_survey2(m_id, survey_data["s2"])   # 導入 自訂套件 to_sql 傳入問卷二的資料 INSERT
             to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
+            kafkaProducer_newUser.to_kafka(m_id, survey_data["s1"])  # 導入自訂套件 kafkaProducer_newUser 傳入問卷一資料進 kafka
 
         else:
             print("OUTSIDE ERROR")
@@ -274,6 +279,8 @@ def outside_daily(daily_data):
     m_id = to_sql.search_mid(user_email["email"])  # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
     to_sql.insertsql_dailyrecord(m_id, daily_data)  # 導入 自訂套件 to_sql 傳入每日飲食紀錄表的資料
     to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
+    recommend.do_difference(m_id)  # 導入自訂套件 recommend 產生新的差值表
+    kafkaProducer_dailyEat.to_kafka(m_id)  # 導入自訂套件 kafkaProducer_dailyEat 傳入每日飲食紀錄表的資料進 kafka
 ######################################################################################################################
 
 
