@@ -4,36 +4,67 @@ from flask_bootstrap import Bootstrap
 import pymysql
 import sql_acount
 import to_sql
-import pandas as pd
 
 
+#起首式###############################################################################################################
 app=Flask(__name__)
 # app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1
 bootstrap = Bootstrap(app)
-
 ## 連接資料庫
 cursor = sql_acount.acount2()        # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
 
+######################################################################################################################
+
+
+
+
+
+#接資料用##############################################################################################################
 ## 登入後的會員Email
 user_email = {}
 
-##連接到HOME
+## 儲存會員的問卷資料 {s1:(), s2:()}
+survey_data = {}
+######################################################################################################################
+
+
+
+
+
+#HOME相關頁面###########################################################################################################
+## 連接到HOME
 @app.route('/')
 def home():
-    return render_template('home_try.html')     #開啟home的HTML
+    return render_template('home_try.html')     # 開啟home的HTML
 
 
-
-##連接到success.home頁面
+## 連接到success.home頁面
 @app.route('/success')
 def success():
-    user = user_email["email"]                              #用上面字典接住的username
-    return render_template('success.html', username=user)   #開啟success的頁面，並輸出username
+    user = user_email["email"]                              # 用上面字典接住的username
+    return render_template('success.html', username=user)   # 開啟success的頁面，並輸出username
 
-'''
-login_try 相關
-'''
 
+## 連接到推薦頁面
+@app.route('/recommend')
+def recommend():
+    recommend = to_sql.select_5()
+    return render_template('recommend.html', value=recommend, username=user_email["email"])
+
+
+## 網頁：問卷填寫完畢的感謝頁面 / 會在畫面停留5秒後跳轉到指定頁面
+@app.route("/survey/thanks", methods=['GET', 'POST'])
+def thanks():
+    return render_template('thanks.html')
+
+
+######################################################################################################################
+
+
+
+
+
+#login_try 相關#######################################################################################################
 ##連接到登入頁面
 @app.route('/login_try',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try():
@@ -91,10 +122,6 @@ def login_try3():
             return "請輸入正確信箱!!" + render_template('login_try3.html')
     return render_template('login_try3.html')
 
-'''
-以上為login_try相關
-'''
-
 
 ##連接到註冊會員頁面
 @app.route('/create',methods=['GET', 'POST'])
@@ -109,13 +136,17 @@ def create():
                 return "您好!!" + request.form.get("name") + \
                        "註冊成功，請稍待片刻~~~系統將會於3秒後自動跳轉回首頁..." + \
                        '<meta http-equiv="refresh" content="3;url=/">', outside_new_account(email)
-
-
         else:
             return "請輸入正確信箱!!" + render_template('create_new_account.html')
     return render_template('create_new_account.html')
 
-##連接到忘記密碼頁面
+def outside_new_account(email):
+    print(email)
+    to_sql.insersql_new_account(email)
+    to_sql.SQLcommit("insert")\
+
+
+## 連接到忘記密碼頁面
 @app.route('/click',methods=['GET', 'POST'])
 def click():
     if request.method == 'POST':
@@ -124,18 +155,14 @@ def click():
         else:
             return "請輸入正確信箱!!" + render_template('click.html')
     return render_template('click.html')
-
-##連接到推薦頁面
-@app.route('/recommend')
-def recommend():
-    recommend = to_sql.select_5()
-    return render_template('recommend.html', value=recommend, username=user_email["email"])
+######################################################################################################################
 
 
-## 儲存會員的問卷資料 {s1:(), s2:()}
-survey_data = {}
 
 
+
+
+#問卷資料##############################################################################################################
 ## 網頁：問卷一
 @app.route("/survey", methods=['GET', 'POST'])
 def survey():
@@ -177,15 +204,8 @@ def survey2():
 
         survey_data["s2"] = (daily_activity, daily_sport, sport_freq, eat_condition, eatingout_freq, not_eat_list,
                              sleep_condition, mental_condition, defecation_condition)   # 將資料暫存在 survey_data
-
         return render_template('thanks.html'), outside()    # 進入到感謝頁面，同時將資料往 MySQL 中送出
-
     return render_template('survey2.html')
-
-## 網頁：問卷填寫完畢的感謝頁面 / 會在畫面停留5秒後跳轉到指定頁面
-@app.route("/survey/thanks", methods=['GET', 'POST'])
-def thanks():
-    return render_template('thanks.html')
 
 
 # 網頁：每日飲食紀錄表
@@ -221,7 +241,7 @@ def daily_record():
                     time_list.append(time2)
 
         daily_list = (food_list, gram_list, time_list, drink_water)
-        return "填寫完成", outside_daily(daily_list)   # 進入到指定頁面，同時將資料往 MySQL 中送出
+        return render_template('thanks.html'), outside_daily(daily_list)   # 進入到指定頁面，同時將資料往 MySQL 中送出
     return render_template('daily_record.html')
 
 
@@ -254,23 +274,24 @@ def outside_daily(daily_data):
     m_id = to_sql.search_mid(user_email["email"])  # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
     to_sql.insertsql_dailyrecord(m_id, daily_data)  # 導入 自訂套件 to_sql 傳入每日飲食紀錄表的資料
     to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
-
-def outside_new_account(email):
-    print(email)
-    to_sql.insersql_new_account(email)
-    to_sql.SQLcommit("insert")\
+######################################################################################################################
 
 
+
+
+
+#Kibana相關############################################################################################################
 ##連接到kibana(天)
 @app.route('/kibana/day')
 def kibana_day():
-     return "hello!!"
+     return render_template('kibana_day.html')
+
 
 ##連接到kibana(周)
 @app.route('/kibana/week')
 def kibana_week():
-    return "hello!!"
-
+    return render_template('kibana_week.html')
+######################################################################################################################
 
 
 
@@ -278,6 +299,6 @@ def kibana_week():
 
 
 if __name__ == "__main__":
-    # port = int(os.environ.get('PORT', 5000))
-    # app.run(debug=True,port=port,host="0.0.0.0")
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True,port=port,host="0.0.0.0")
+    # app.run(debug=True)
