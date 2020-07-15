@@ -9,7 +9,7 @@ import kafkaProducer_dailyEat
 import recommend
 
 
-#起首式###############################################################################################################
+# 起首式###############################################################################################################
 app=Flask(__name__)
 # app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1
 bootstrap = Bootstrap(app)
@@ -22,7 +22,7 @@ cursor = sql_acount.acount2()        # 可以把這當作操作MySQL時，你的
 
 
 
-#接資料用##############################################################################################################
+# 接資料用#############################################################################################################
 ## 登入後的會員Email
 user_email = {}
 
@@ -34,7 +34,7 @@ survey_data = {}
 
 
 
-#HOME相關頁面###########################################################################################################
+# HOME相關頁面#########################################################################################################
 ## 連接到HOME
 @app.route('/')
 def home():
@@ -67,81 +67,91 @@ def thanks():
 
 
 
-#login_try 相關#######################################################################################################
-##連接到登入頁面
-@app.route('/login_try',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
+# login_try 相關#######################################################################################################
+## 連接到登入頁面
+@app.route('/login_try',methods=['GET', 'POST'])                        # 只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try():
     if request.method == 'POST':
-        email= request.form.get("aausername")
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):
-            check_email  = to_sql.check_survey_email(email)
+        email= request.form.get("aausername")                           # 在頁面中抓HTML是"aausername"的資訊
+        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):        # 寫判斷式確認登入是否為Email格式
+            check_email  = to_sql.check_survey_email(email)             # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
             if check_email == "exist":
-                user_email["email"] = request.form.get("aausername")
-                return  redirect(url_for('success'))
+                user_email["email"] = request.form.get("aausername")    # 如果有就將username+入上方字典中以{["email"]:XXX@gmail.com}的格式
+                return  redirect(url_for('success'))                    # 轉到success的函式中
             else:
 
-                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + render_template('login_try.html')
+                return "登入失敗!!!請確認帳號與密碼是否正確!!!" +\
+                       render_template('login_try.html')                # 若Email沒有在SQL中會回傳此訊息+頁面
 
 
         else:
-            return "請輸入正確信箱!!" + render_template('login_try.html')
-    return render_template('login_try.html')
+            return "請輸入正確信箱!!" + \
+                   render_template('login_try.html')                    # 若Email格式錯誤會回傳此訊息+頁面
+    return render_template('login_try.html')                            # 此為呼叫login_try()這函式就會回傳的頁面
 
-
-##登入頁面用在line+問卷
-@app.route('/login_try2',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
+### line專用###
+## 登入頁面用於 "line+基本問卷"
+@app.route('/login_try2',methods=['GET', 'POST'])                       # 只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try2():
     if request.method == 'POST':
-        email= request.form.get("aausername")
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):
-            check_email  = to_sql.check_survey_email(email)
+        email= request.form.get("aausername")                           # 在頁面中抓HTML是"aausername"的資訊
+        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):        # 寫判斷式確認登入是否為Email格式
+            check_email  = to_sql.check_survey_email(email)             # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
             if check_email == "exist":
-                user_email["email"] = request.form.get("aausername")
-                return  redirect(url_for('survey'))
+                user_email["email"] = request.form.get("aausername")    # 如果有就將username+入上方字典中以{["email"]:XXX@gmail.com}的格式
+                return  redirect(url_for('survey'))                     # 轉到survey的函式中
             else:
 
-                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + render_template('login_try2.html')
+                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + \
+                       render_template('login_try2.html')               # 若Email沒有在SQL中會回傳此訊息+頁面
 
         else:
-            return "請輸入正確信箱!!" + render_template('login_try2.html')
-    return render_template('login_try2.html')
+            return "請輸入正確信箱!!" + \
+                   render_template('login_try2.html')                   # 若Email格式錯誤會回傳此訊息+頁面
+    return render_template('login_try2.html')                           # 此為呼叫login_try2()這函式就會回傳的頁面
 
-##登入頁面用在line+每日飲食
-@app.route('/login_try3',methods=['GET', 'POST'])                #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
+
+### line專用###
+## 登入頁面用在"line+每日飲食問卷"
+@app.route('/login_try3',methods=['GET', 'POST'])                        #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try3():
     if request.method == 'POST':
-        email= request.form.get("aausername")
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):
-            check_email  = to_sql.check_survey_email(email)
+        email= request.form.get("aausername")                            # 在頁面中抓HTML是"aausername"的資訊
+        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):         # 寫判斷式確認登入是否為Email格式
+            check_email  = to_sql.check_survey_email(email)              # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
             if check_email == "exist":
-                user_email["email"] = request.form.get("aausername")
-                return  redirect(url_for('daily_record'))
+                user_email["email"] = request.form.get("aausername")     # 如果有就將username+入上方字典中以{["email"]:XXX@gmail.com}的格式
+                return  redirect(url_for('daily_record'))                # 轉到daily_record的函式中
             else:
 
-                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + render_template('login_try3.html')
+                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + \
+                       render_template('login_try3.html')                # 若Email沒有在SQL中會回傳此訊息+頁面
 
 
         else:
-            return "請輸入正確信箱!!" + render_template('login_try3.html')
-    return render_template('login_try3.html')
+            return "請輸入正確信箱!!" + \
+                   render_template('login_try3.html')                    # 若Email格式錯誤會回傳此訊息+頁面
+    return render_template('login_try3.html')                            # 此為呼叫login_try3()這函式就會回傳的頁面
 
 
-##連接到註冊會員頁面
-@app.route('/create',methods=['GET', 'POST'])
+## 連接到註冊會員頁面
+@app.route('/create',methods=['GET', 'POST'])                                               #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def create():
-    if request.method == 'POST':
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', request.form.get("name")):
-            check_email = to_sql.check_survey_email(request.form.get("name"))
+    if request.method == 'POST':                                                            # 當網頁發生 POST method 則會獲取網頁中使用者填入的資料
+        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', request.form.get("name")):         # 寫判斷式確認登入是否為Email格式
+            check_email = to_sql.check_survey_email(request.form.get("name"))               # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
             if check_email == "exist":
-                return "信箱已被註冊!!" + render_template('create_new_account.html')
+                return "信箱已被註冊!!" + \
+                       render_template('create_new_account.html')                            # 若Email有在SQL中會回傳此訊息+頁面
             else:
-                email = request.form.get("name")
+                email = request.form.get("name")                                             # 若Email沒有在SQL中，用變數接住
                 return "您好!!" + request.form.get("name") + \
                        "註冊成功，請稍待片刻~~~系統將會於3秒後自動跳轉回首頁..." + \
-                       '<meta http-equiv="refresh" content="3;url=/">', outside_new_account(email)
+                       '<meta http-equiv="refresh" content="3;url=/">', \
+                       outside_new_account(email)                                            # 回傳訊息+呼叫outside_new_account(email)這函式將變數放入，在SQL中心增資料
         else:
-            return "請輸入正確信箱!!" + render_template('create_new_account.html')
-    return render_template('create_new_account.html')
+            return "請輸入正確信箱!!" + render_template('create_new_account.html')            # 若Email格式錯誤會回傳此訊息+頁面
+    return render_template('create_new_account.html')                                        # 此為呼叫create()這函式就會回傳的頁面
 
 def outside_new_account(email):
     print(email)
@@ -150,14 +160,16 @@ def outside_new_account(email):
 
 
 ## 連接到忘記密碼頁面
-@app.route('/click',methods=['GET', 'POST'])
+@app.route('/click',methods=['GET', 'POST'])                                                     #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def click():
-    if request.method == 'POST':
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$',  request.form.get("nname")):
-            return "您好!!" + request.form.get("nname")+"，已寄送相關文件至您的信箱!!請稍待片刻~~~系統將會於3秒後自動跳轉回首頁..."+'<meta http-equiv="refresh" content="3;url=/">'
+    if request.method == 'POST':                                                                 # 當網頁發生 POST method 則會獲取網頁中使用者填入的資料
+        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$',  request.form.get("nname")):            # 寫判斷式確認登入是否為Email格式
+            return "您好!!" + request.form.get("nname")+\
+                   "，已寄送相關文件至您的信箱!!請稍待片刻~~~系統將會於3秒後自動跳轉回首頁..."+\
+                   '<meta http-equiv="refresh" content="3;url=/">'                               # 在頁面中抓HTML是"nname"的資訊
         else:
-            return "請輸入正確信箱!!" + render_template('click.html')
-    return render_template('click.html')
+            return "請輸入正確信箱!!" + render_template('click.html')                             # 若Email格式錯誤會回傳此訊息+頁面
+    return render_template('click.html')                                                         # 此為呼叫create()這函式就會回傳的頁面
 ######################################################################################################################
 
 
@@ -288,13 +300,13 @@ def outside_daily(daily_data):
 
 
 #Kibana相關############################################################################################################
-##連接到kibana(天)
+## 連接到kibana(天)
 @app.route('/kibana/day')
 def kibana_day():
      return render_template('kibana_day.html')
 
 
-##連接到kibana(周)
+## 連接到kibana(周)
 @app.route('/kibana/week')
 def kibana_week():
     return render_template('kibana_week.html')
