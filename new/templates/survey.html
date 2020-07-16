@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>個人調查表</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <a href="/success" class="btn btn-secondary btn-lg active" role="button" aria-pressed="true">回主頁</a>
+
+
+  </head>
+  <body>
+
+    <div class="container">
+      <h2>基本資料</h2>
+
+      <form method="post" action="/survey" class="was-validated">
+
+        <div class="form-group">
+          <label for="user">姓名:</label>
+          <input type="text" class="form-control" id="user" placeholder="Enter Your Name" name="user" aria-describedby="inputGroupPrepend" required>
+        </div>
+
+        <div class="form-group">
+          <p>性別:</p>
+          <select class="custom-select" name="sex" required>
+            <option value="">Open this select menu</option>
+            <option value="1">Male</option>
+            <option value="0">Female</option>
+          </select>
+          <div class="invalid-feedback">Example invalid custom select feedback</div>
+        </div>
+
+
+        <div class="form-group">
+          <label for="birthday">生日:</label>
+          <input type="text" class="form-control" id="birthday" placeholder="Enter Your Birthday" name="birthday" aria-describedby="inputGroupPrepend" required>
+        </div>
+
+        <div class="form-group">
+          <label for="height">身高:</label>
+          <input type="text" class="form-control" id="height" placeholder="Enter Your Height" name="height" aria-describedby="inputGroupPrepend" required>
+        </div>
+
+        <div class="form-group">
+          <label for="weight">體重:</label>
+          <input type="text" class="form-control" id="weight" placeholder="Enter Your Weight" name="weight" aria-describedby="inputGroupPrepend" required>
+        </div>
+
+        <div class="form-group">
+          <p>飲食目標設定:</p>
+          <select class="custom-select" name="target" required>
+            <option value="">Open this select menu</option>
+            <option value="tg01">一般</option>
+            <option value="tg02">減重</option>
+            <option value="tg03">增重</option>
+            <option value="tg04">健身增肌</option>
+            <option value="tg05">生酮</option>
+          </select>
+          <div class="invalid-feedback">Example invalid custom select feedback</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Next</button>
+      </form>
+    </div>
+
+  </body>
+</html>
