@@ -9,7 +9,11 @@ import to_sql
 import kafkaProducer_newUser
 import kafkaProducer_dailyEat
 import recommend
-#### 起首式 #####################################################
+
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+#                              - 起手式 -
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+
 app=Flask(__name__)
 bootstrap = Bootstrap(app)
 
@@ -42,26 +46,34 @@ def user_loader(email):
     user.id = email
     return user
 
-################################################################
 
 
 
 
 
-#### 接資料 #####################################################
+
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+#                              - 接資料 -
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+
 ##  假裝是我們的使用者
 users = {'XXX@gmail.com': {'password':'$2b$05$omfOnTlGYnByY9vhhyMceuJa0RIzmGoMTkbfT2tRHJ8qbgBnUTPFG'},
          'aaa@gmail.com':{'password':'$2b$12$/z9RomvXHYD/Zbrv/uvlmeSthIQl8YeemOr/v.u1MoRVIDVMeuzuy'}}  #需再改
 
 ## 基礎問卷
 survey_data = {}
-################################################################
 
 
 
 
 
-#### HOME 相關頁面 ##############################################
+
+
+
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+#                            - HOME 相關 -
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+
 ## 連接到HOME
 @app.route('/')
 def home():
@@ -89,12 +101,15 @@ def recommend():
 def thanks():
     return render_template('thanks.html')
 
-################################################################
 
 
 
 
-#### Login 相關頁面 #############################################
+
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+#                           - Login 相關 -
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+
 ## 連接到登入頁面
 @app.route('/login_try', methods=['GET', 'POST'])       #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try():
@@ -175,11 +190,14 @@ def click():
         else:
             return "請輸入正確信箱!!" + render_template('click.html')                             # 若Email格式錯誤會回傳此訊息+頁面
     return render_template('click.html')                                                         # 此為呼叫create()這函式就會回傳的頁面
-################################################################
 
 
 
-#### 問卷相關#######################################################
+
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+#                             - 問卷相關 -
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+
 ## 網頁：問卷一
 @app.route("/survey", methods=['GET', 'POST'])
 def survey():
@@ -261,6 +279,10 @@ def daily_record():
     return render_template('daily_record.html')
 
 
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+#                             - 輸出相關 -
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+
 def outside():
     # 判斷暫存在 survey_data 中資料的狀況，排除各種可能空值情形
     if (survey_data["s1"] != "" and survey_data["s1"] != () and survey_data["s1"] != None) and \
@@ -286,6 +308,7 @@ def outside():
         else:
             print("OUTSIDE ERROR")
             pass
+
 def outside_daily(daily_data):
     print(daily_data)
     m_id = to_sql.search_mid(current_user.id)  # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
@@ -296,7 +319,10 @@ def outside_daily(daily_data):
     # kafkaProducer_dailyEat.to_kafka(m_id)  # 導入自訂套件 kafkaProducer_dailyEat 傳入每日飲食紀錄表的資料進 kafka
 
 
-### Kibana相關#########################################################################################################
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+#                           - Kibana相關 -
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
+
 ## 連接到kibana(天)
 @app.route('/kibana/day')
 def kibana_day():
@@ -307,7 +333,7 @@ def kibana_day():
 @app.route('/kibana/week')
 def kibana_week():
     return render_template('kibana_week.html')
-######################################################################################################################
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))

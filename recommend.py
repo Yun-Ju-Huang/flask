@@ -3,7 +3,7 @@ import re
 import sql_acount
 
 ## 連接資料庫
-host = "35.229.172.113"             # GCP Cloud SQL 的 IP
+host = sql_acount.login()[2]             # GCP Cloud SQL 的 IP
 port = 3306                         # MySQL 的 Port
 user = sql_acount.login()[0]        # 帳號存放在另外的位置
 password = sql_acount.login()[1]    # 密碼存放在另外位置
@@ -33,7 +33,7 @@ def insert_difference(m_id):
     """
     cursor = connection.cursor()  # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
     cursor.execute(sql)  # 執行 SQL 指令
-    connection.commit()  # commit 所有暫存的 SQL 指令
+    # connection.commit()  # commit 所有暫存的 SQL 指令
     connection.close()   # 關閉 SQL 的操作，此時 cursor 當中有暫存 SQL 指令會被清除
     print("difference_Data INSERT to MySQL successfully")
 
@@ -95,7 +95,7 @@ def update_difference(m_id):
     """
     cursor.execute(sql_set1)  # 執行 SQL 指令
 
-    connection.commit()  # commit 所有暫存的 SQL 指令
+    # connection.commit()  # commit 所有暫存的 SQL 指令
     connection.close()  # 關閉 SQL 的操作，此時 cursor 當中有暫存 SQL 指令會被清除
 
     print("difference_Data UPDATE to MySQL successfully")
