@@ -1,58 +1,87 @@
 from flask import Flask, render_template,request,redirect,url_for,make_response,flash
 import re, os
+from flask_login import LoginManager, UserMixin, login_user, current_user, login_required, logout_user
 from flask_bootstrap import Bootstrap
+import flask_bcrypt
 import pymysql
 import sql_acount
 import to_sql
 import kafkaProducer_newUser
 import kafkaProducer_dailyEat
 import recommend
-
-
-# 起首式###############################################################################################################
+#### 起首式 #####################################################
 app=Flask(__name__)
-# app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1
 bootstrap = Bootstrap(app)
+
 ## 連接資料庫
 cursor = sql_acount.acount2()        # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
 
-######################################################################################################################
+#  會使用到session，故為必設。
+app.secret_key = 'Your Key'
+login_manager = LoginManager(app)
+#  login\_manager.init\_app(app)也可以
+
+
+class User(UserMixin):
+    """
+        設置一： 只是假裝一下，所以單純的繼承一下而以 如果我們希望可以做更多判斷，
+        如is_administrator也可以從這邊來加入
+    """
+    pass
+
+
+@login_manager.user_loader
+def user_loader(email):
+    """
+        設置二： 透過這邊的設置讓flask_login可以隨時取到目前的使用者id
+        :param email:官網此例將email當id使用，賦值給予user.id
+    """
+    if email not in users:
+        return
+    user = User()
+    user.id = email
+    return user
+
+################################################################
 
 
 
 
 
-# 接資料用#############################################################################################################
-## 登入後的會員Email
-user_email = {}
+#### 接資料 #####################################################
+##  假裝是我們的使用者
+users = {'XXX@gmail.com': {'password':'$2b$05$omfOnTlGYnByY9vhhyMceuJa0RIzmGoMTkbfT2tRHJ8qbgBnUTPFG'},
+         'aaa@gmail.com':{'password':'$2b$12$/z9RomvXHYD/Zbrv/uvlmeSthIQl8YeemOr/v.u1MoRVIDVMeuzuy'}}  #需再改
 
-## 儲存會員的問卷資料 {s1:(), s2:()}
+## 基礎問卷
 survey_data = {}
-######################################################################################################################
+################################################################
 
 
 
 
 
-# HOME相關頁面#########################################################################################################
+#### HOME 相關頁面 ##############################################
 ## 連接到HOME
 @app.route('/')
 def home():
     return render_template('home_try.html')     # 開啟home的HTML
 
 
-## 連接到success.home頁面
-@app.route('/success')
+## 連接到登入後頁面
+@app.route('/success', methods=['GET', 'POST'])
+@login_required
 def success():
-    user = user_email["email"]                              # 用上面字典接住的username
-    return render_template('success.html', username=user)   # 開啟success的頁面，並輸出username
+    user = current_user.id
+    return render_template("success.html", user=user)
 
 
-## 連接到推薦頁面
+# 連接到推薦頁面
 @app.route('/recommend')
 def recommend():
+    user = current_user.id
     recommend = to_sql.select_5()
-    return render_template('recommend.html', value=recommend, username=user_email["email"])
+    return render_template('recommend.html', value=recommend, user=user)
 
 
 ## 網頁：問卷填寫完畢的感謝頁面 / 會在畫面停留5秒後跳轉到指定頁面
@@ -60,104 +89,80 @@ def recommend():
 def thanks():
     return render_template('thanks.html')
 
-
-######################################################################################################################
-
+################################################################
 
 
 
 
-# login_try 相關#######################################################################################################
+#### Login 相關頁面 #############################################
 ## 連接到登入頁面
-@app.route('/login_try',methods=['GET', 'POST'])                        # 只要有表格需輸入就須寫『,methods=['GET', 'POST']』
+@app.route('/login_try', methods=['GET', 'POST'])       #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def login_try():
-    if request.method == 'POST':
-        email= request.form.get("aausername")                           # 在頁面中抓HTML是"aausername"的資訊
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):        # 寫判斷式確認登入是否為Email格式
-            check_email  = to_sql.check_survey_email(email)             # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
-            if check_email == "exist":
-                user_email["email"] = request.form.get("aausername")    # 如果有就將username+入上方字典中以{["email"]:XXX@gmail.com}的格式
-                return  redirect(url_for('success'))                    # 轉到success的函式中
-            else:
-
-                return "登入失敗!!!請確認帳號與密碼是否正確!!!" +\
-                       render_template('login_try.html')                # 若Email沒有在SQL中會回傳此訊息+頁面
-
-
-        else:
-            return "請輸入正確信箱!!" + \
-                   render_template('login_try.html')                    # 若Email格式錯誤會回傳此訊息+頁面
-    return render_template('login_try.html')                            # 此為呼叫login_try()這函式就會回傳的頁面
-
-### line專用###
-## 登入頁面用於 "line+基本問卷"
-@app.route('/login_try2',methods=['GET', 'POST'])                       # 只要有表格需輸入就須寫『,methods=['GET', 'POST']』
-def login_try2():
-    if request.method == 'POST':
-        email= request.form.get("aausername")                           # 在頁面中抓HTML是"aausername"的資訊
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):        # 寫判斷式確認登入是否為Email格式
-            check_email  = to_sql.check_survey_email(email)             # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
-            if check_email == "exist":
-                user_email["email"] = request.form.get("aausername")    # 如果有就將username+入上方字典中以{["email"]:XXX@gmail.com}的格式
-                return  redirect(url_for('survey'))                     # 轉到survey的函式中
-            else:
-
-                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + \
-                       render_template('login_try2.html')               # 若Email沒有在SQL中會回傳此訊息+頁面
+    if request.method == 'GET':
+        return render_template("login_try.html")
+    email = request.form['email']
+    if email not in users:
+        flash("登入失敗!!!請確認帳號是否正確!!!")
+        return redirect(url_for('login_try'))
+    else:
+        if flask_bcrypt.check_password_hash(users[email]['password'], request.form['password']) == True:
+            #  實作User類別
+            user = User()
+            #  設置id就是email
+            user.id = email
+            #  這邊，透過login_user來記錄user_id，如下了解程式碼的login_user說明。
+            login_user(user)
+            #  登入成功，轉址
+            return redirect(url_for('success'))
 
         else:
-            return "請輸入正確信箱!!" + \
-                   render_template('login_try2.html')                   # 若Email格式錯誤會回傳此訊息+頁面
-    return render_template('login_try2.html')                           # 此為呼叫login_try2()這函式就會回傳的頁面
+            flash("登入失敗!!!請確認密碼是否正確!!!")
+            return redirect(url_for('login_try')) # 密碼錯誤
 
 
-### line專用###
-## 登入頁面用在"line+每日飲食問卷"
-@app.route('/login_try3',methods=['GET', 'POST'])                        #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
-def login_try3():
-    if request.method == 'POST':
-        email= request.form.get("aausername")                            # 在頁面中抓HTML是"aausername"的資訊
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', email):         # 寫判斷式確認登入是否為Email格式
-            check_email  = to_sql.check_survey_email(email)              # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
-            if check_email == "exist":
-                user_email["email"] = request.form.get("aausername")     # 如果有就將username+入上方字典中以{["email"]:XXX@gmail.com}的格式
-                return  redirect(url_for('daily_record'))                # 轉到daily_record的函式中
-            else:
-
-                return "登入失敗!!!請確認帳號與密碼是否正確!!!" + \
-                       render_template('login_try3.html')                # 若Email沒有在SQL中會回傳此訊息+頁面
+## 登出
+@app.route('/logout')
+def logout():
+    """
+        logout\_user會將所有的相關session資訊給pop掉
+    """
+    logout_user()
+    return "感謝您的使用，歡迎再度使用本產品!!"+'<meta http-equiv="refresh" content="3;url=/">'
 
 
-        else:
-            return "請輸入正確信箱!!" + \
-                   render_template('login_try3.html')                    # 若Email格式錯誤會回傳此訊息+頁面
-    return render_template('login_try3.html')                            # 此為呼叫login_try3()這函式就會回傳的頁面
+## 發生401錯誤時回跳轉到登入頁面
+@app.errorhandler(401)
+def custom_401(error):
+    return redirect(url_for('login_try'))
 
 
 ## 連接到註冊會員頁面
 @app.route('/create',methods=['GET', 'POST'])                                               #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
 def create():
     if request.method == 'POST':                                                            # 當網頁發生 POST method 則會獲取網頁中使用者填入的資料
-        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', request.form.get("name")):         # 寫判斷式確認登入是否為Email格式
-            check_email = to_sql.check_survey_email(request.form.get("name"))               # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
+        if re.match(r'[\w.-]+@[^@\s]+\.[a-zA-Z]{2,10}$', request.form.get("email")):         # 寫判斷式確認登入是否為Email格式
+            # print(request.form.get("email"))
+            check_email = to_sql.check_survey_email(request.form.get("email"))             # 呼叫to_sql的check_survey_email確認該email是否有在SQL中
             if check_email == "exist":
                 return "信箱已被註冊!!" + \
-                       render_template('create_new_account.html')                            # 若Email有在SQL中會回傳此訊息+頁面
+                       render_template('create_new_account.html')                         # 若Email有在SQL中會回傳此訊息+頁面
             else:
-                email = request.form.get("name")                                             # 若Email沒有在SQL中，用變數接住
-                return "您好!!" + request.form.get("name") + \
-                       "註冊成功，請稍待片刻~~~系統將會於3秒後自動跳轉回首頁..." + \
-                       '<meta http-equiv="refresh" content="3;url=/">', \
-                       outside_new_account(email)                                            # 回傳訊息+呼叫outside_new_account(email)這函式將變數放入，在SQL中心增資料
+                email = request.form.get("email")                                          # 若Email沒有在SQL中，用變數接住
+                password = request.form.get("password")
+                p_hash = flask_bcrypt.generate_password_hash(password).decode("utf-8")      #密碼加密!!
+            return "您好!! " + request.form.get("email") + \
+                   " 註冊成功，請稍待片刻~~~系統將會於3秒後自動跳轉回首頁..." + \
+                   '<meta http-equiv="refresh" content="3;url=/">' , outside_new_account(email,p_hash)    # 回傳訊息+呼叫outside_new_account(email)這函式將變數放入，在SQL中心增資料
         else:
             return "請輸入正確信箱!!" + render_template('create_new_account.html')            # 若Email格式錯誤會回傳此訊息+頁面
     return render_template('create_new_account.html')                                        # 此為呼叫create()這函式就會回傳的頁面
 
-def outside_new_account(email):
-    print(email)
-    to_sql.insersql_new_account(email)
-    to_sql.SQLcommit("insert")\
 
+## 創新會員
+def outside_new_account(email,password):
+    print(email,password)                   #回傳值為加密過的密碼
+    to_sql.insersql_new_account(email,password)
+    to_sql.SQLcommit("insert")
 
 ## 連接到忘記密碼頁面
 @app.route('/click',methods=['GET', 'POST'])                                                     #只要有表格需輸入就須寫『,methods=['GET', 'POST']』
@@ -170,14 +175,11 @@ def click():
         else:
             return "請輸入正確信箱!!" + render_template('click.html')                             # 若Email格式錯誤會回傳此訊息+頁面
     return render_template('click.html')                                                         # 此為呼叫create()這函式就會回傳的頁面
-######################################################################################################################
+################################################################
 
 
 
-
-
-
-#問卷資料##############################################################################################################
+#### 問卷相關#######################################################
 ## 網頁：問卷一
 @app.route("/survey", methods=['GET', 'POST'])
 def survey():
@@ -222,7 +224,6 @@ def survey2():
         return render_template('thanks.html'), outside()    # 進入到感謝頁面，同時將資料往 MySQL 中送出
     return render_template('survey2.html')
 
-
 # 網頁：每日飲食紀錄表
 @app.route("/daily_record", methods=['GET', 'POST'])
 def daily_record():
@@ -266,40 +267,36 @@ def outside():
             (survey_data["s2"] != "" and survey_data["s2"] != () and survey_data["s2"] != None):
         print(survey_data)
 
-        m_id = to_sql.search_mid(user_email["email"])  # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
+        m_id = to_sql.search_mid(current_user.id)  # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
+        print(m_id)
 
         check_result = to_sql.check_survey_mid(m_id)    # 導入 自訂套件 to_sql 查看"當日"的 m_id 是否存在於表格 member 當中
         if check_result == "exist":
             to_sql.updatesql_survey(m_id, survey_data["s1"])    # 導入 自訂套件 to_sql 傳入問卷一的資料 UPDATE
             to_sql.updatesql_survey2(m_id, survey_data["s2"])   # 導入 自訂套件 to_sql 傳入問卷二的資料 UPDATE
-            to_sql.SQLcommit("update")    # commit 在自訂套件 to_sql 中下的所有 SQL UPDATE 指令
-            kafkaProducer_newUser.to_kafka(m_id, survey_data["s1"])  # 導入自訂套件 kafkaProducer_newUser 傳入問卷一資料進 kafka
+            # to_sql.SQLcommit("update")    # commit 在自訂套件 to_sql 中下的所有 SQL UPDATE 指令
+            # kafkaProducer_newUser.to_kafka(m_id, survey_data["s1"])  # 導入自訂套件 kafkaProducer_newUser 傳入問卷一資料進 kafka
 
         elif check_result == "no exist":
             to_sql.insertsql_survey(m_id, survey_data["s1"])    # 導入 自訂套件 to_sql 傳入問卷一的資料 INSERT
             to_sql.insertsql_survey2(m_id, survey_data["s2"])   # 導入 自訂套件 to_sql 傳入問卷二的資料 INSERT
-            to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
-            kafkaProducer_newUser.to_kafka(m_id, survey_data["s1"])  # 導入自訂套件 kafkaProducer_newUser 傳入問卷一資料進 kafka
+            # to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
+            # kafkaProducer_newUser.to_kafka(m_id, survey_data["s1"])  # 導入自訂套件 kafkaProducer_newUser 傳入問卷一資料進 kafka
 
         else:
             print("OUTSIDE ERROR")
             pass
-
-
 def outside_daily(daily_data):
     print(daily_data)
-    m_id = to_sql.search_mid(user_email["email"])  # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
+    m_id = to_sql.search_mid(current_user.id)  # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
+    print(m_id)
     to_sql.insertsql_dailyrecord(m_id, daily_data)  # 導入 自訂套件 to_sql 傳入每日飲食紀錄表的資料
-    to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
-    recommend.do_difference(m_id)  # 導入自訂套件 recommend 產生新的差值表
-    kafkaProducer_dailyEat.to_kafka(m_id)  # 導入自訂套件 kafkaProducer_dailyEat 傳入每日飲食紀錄表的資料進 kafka
-######################################################################################################################
+    # to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
+    # recommend.do_difference(m_id)  # 導入自訂套件 recommend 產生新的差值表
+    # kafkaProducer_dailyEat.to_kafka(m_id)  # 導入自訂套件 kafkaProducer_dailyEat 傳入每日飲食紀錄表的資料進 kafka
 
 
-
-
-
-#Kibana相關############################################################################################################
+### Kibana相關#########################################################################################################
 ## 連接到kibana(天)
 @app.route('/kibana/day')
 def kibana_day():
@@ -312,12 +309,14 @@ def kibana_week():
     return render_template('kibana_week.html')
 ######################################################################################################################
 
-
-
-
-
-
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True,port=port,host="0.0.0.0")
     # app.run(debug=True)
+
+
+
+
+
+
+

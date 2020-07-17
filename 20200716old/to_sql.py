@@ -128,7 +128,7 @@ def updatesql_survey2(m_id, data):
 
 
 
-def insersql_new_account(email,password):
+def insersql_new_account(email):
     sql='''
     SELECT m_id FROM i_member.myuser order by m_id desc limit 1'''
     cursor = connection.cursor()    # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
@@ -137,9 +137,9 @@ def insersql_new_account(email,password):
     # print(m_id)
     new_m_id = "M"+str(int(m_id.strip("M"))+1)
     sql2=f'''INSERT INTO i_member.myuser 
-    (m_id, email,password)
+    (m_id, email)
     VALUES
-    ("{new_m_id}", "{email}","{password}");'''
+    ("{new_m_id}", "{email}");'''
     cursor.execute(sql2)  # 執行 SQL 指令，此時 INSERT 指令還處在暫存狀態，因為尚未 commit
     print("myuser  successfully")
 

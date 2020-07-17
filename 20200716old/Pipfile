@@ -14,8 +14,6 @@ verify_ssl = true
 "sqlalchemy" = '*'
 'flask_login'='*'
 "pandas"='*'
-'confluent_kafka'='*'
-'flask_bcrypt'='*'
 
 
 
