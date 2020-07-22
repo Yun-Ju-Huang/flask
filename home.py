@@ -3,12 +3,14 @@ import re, os
 from flask_login import LoginManager, UserMixin, login_user, current_user, login_required, logout_user
 from flask_bootstrap import Bootstrap
 import flask_bcrypt
+import everyday_difference
 import pymysql
 import sql_acount
 import to_sql
 import kafkaProducer_newUser
 import kafkaProducer_dailyEat
-import recommend
+import time
+import daily_nutrients
 
 #▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
 #                              - 起手式 -
@@ -20,12 +22,13 @@ bootstrap = Bootstrap(app)
 ## 連接資料庫
 cursor = sql_acount.acount2()        # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
 
-#  會使用到session，故為必設。
+#  會使用到session，故為必設。(flask_login預設必寫)
 app.secret_key = 'Your Key'
 login_manager = LoginManager(app)
 #  login\_manager.init\_app(app)也可以
 
 
+## flask_login預設必寫
 class User(UserMixin):
     """
         設置一： 只是假裝一下，所以單純的繼承一下而以 如果我們希望可以做更多判斷，
@@ -34,6 +37,7 @@ class User(UserMixin):
     pass
 
 
+## flask_login預設必寫
 @login_manager.user_loader
 def user_loader(email):
     """
@@ -46,7 +50,7 @@ def user_loader(email):
     user.id = email
     return user
 
-
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
 
 
 
@@ -60,18 +64,18 @@ def user_loader(email):
 users = {'XXX@gmail.com': {'password':'$2b$05$omfOnTlGYnByY9vhhyMceuJa0RIzmGoMTkbfT2tRHJ8qbgBnUTPFG'},
          'aaa@gmail.com':{'password':'$2b$12$/z9RomvXHYD/Zbrv/uvlmeSthIQl8YeemOr/v.u1MoRVIDVMeuzuy'}}  #需再改
 
+
 ## 基礎問卷
 survey_data = {}
 
-
-
+#▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
 
 
 
 
 
 #▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
-#                            - HOME 相關 -
+#              - HOME 相關(無判斷式直接return HTML) -
 #▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
 
 ## 連接到HOME
@@ -81,19 +85,20 @@ def home():
 
 
 ## 連接到登入後頁面
-@app.route('/success', methods=['GET', 'POST'])
-@login_required
+@app.route('/success', methods=['GET', 'POST'])      # 只要有表格需輸入就須寫『methods=['GET', 'POST']』
+@login_required                                      # 寫這『methods=['GET', 'POST']』，原因是要記住"username"
 def success():
-    user = current_user.id
-    return render_template("success.html", user=user)
+    user = current_user.id                           # 與request.form.get()意思差不多，取"USERNWME"
+    return render_template("success.html", user=user)   # 回傳"success.html"，並記住"USERNAME"
 
 
 # 連接到推薦頁面
 @app.route('/recommend')
 def recommend():
-    user = current_user.id
-    recommend = to_sql.select_5()
+    user = current_user.id          # 與request.form.get()意思差不多，取"USERNWME"
+    recommend = to_sql.select_5()   # 呼叫to_sql中的sql指令(隨機回傳三筆資料)
     return render_template('recommend.html', value=recommend, user=user)
+    # 回傳"recommend,html"，並記住"USERNAME"，接住recommend去html用J
 
 
 ## 網頁：問卷填寫完畢的感謝頁面 / 會在畫面停留5秒後跳轉到指定頁面
@@ -246,6 +251,24 @@ def survey2():
 @app.route("/daily_record", methods=['GET', 'POST'])
 def daily_record():
     cursor.close()  # 進入網站時先關閉 SQL 的操作，此時 cursor 當中有暫存 SQL 指令會被清除
+
+    m_id = to_sql.search_mid(current_user.id)
+    print(m_id)
+
+    try:
+        everyday_difference.do_difference(m_id)
+        print("do not lazzzzzzzzzzzzzy")
+    except:
+        print("no demand_schedule")
+        return "第一次登入嗎? 還沒填寫基本資料問卷" + '<meta http-equiv="refresh" content="3;url=/success">'
+
+    try:
+        to_sql.check_mid(m_id)
+    except:
+        print("no demand_schedule2")
+        return "第一次登入嗎? 還沒填寫基本資料問卷" + '<meta http-equiv="refresh" content="3;url=/success">'
+
+
     if request.method == 'POST':    # 當網頁發生 POST method 則會獲取網頁中使用者填入的資料
         food_list = []      # 暫存使用者當日吃的所有食物
         gram_list = []      # 暫存使用者當日吃的所有食物各自的公克重
@@ -296,14 +319,17 @@ def outside():
         if check_result == "exist":
             to_sql.updatesql_survey(m_id, survey_data["s1"])    # 導入 自訂套件 to_sql 傳入問卷一的資料 UPDATE
             to_sql.updatesql_survey2(m_id, survey_data["s2"])   # 導入 自訂套件 to_sql 傳入問卷二的資料 UPDATE
-            # to_sql.SQLcommit("update")    # commit 在自訂套件 to_sql 中下的所有 SQL UPDATE 指令
+            to_sql.SQLcommit("update")    # commit 在自訂套件 to_sql 中下的所有 SQL UPDATE 指令
             # kafkaProducer_newUser.to_kafka(m_id, survey_data["s1"])  # 導入自訂套件 kafkaProducer_newUser 傳入問卷一資料進 kafka
 
         elif check_result == "no exist":
             to_sql.insertsql_survey(m_id, survey_data["s1"])    # 導入 自訂套件 to_sql 傳入問卷一的資料 INSERT
             to_sql.insertsql_survey2(m_id, survey_data["s2"])   # 導入 自訂套件 to_sql 傳入問卷二的資料 INSERT
-            # to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
+            to_sql.SQLcommit("insert")                          # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
             # kafkaProducer_newUser.to_kafka(m_id, survey_data["s1"])  # 導入自訂套件 kafkaProducer_newUser 傳入問卷一資料進 kafka
+            time.sleep(10)                                      # 因要模型跑完，產生會員分群結果；所以要睡10秒
+            everyday_difference.do_difference(m_id)             # 產生新的差值表
+            to_sql.SQLcommit("insert")                          # 確定新增新差值表進SQL
 
         else:
             print("OUTSIDE ERROR")
@@ -311,12 +337,14 @@ def outside():
 
 def outside_daily(daily_data):
     print(daily_data)
-    m_id = to_sql.search_mid(current_user.id)  # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
+    m_id = to_sql.search_mid(current_user.id)       # 導入 自訂套件 to_sql 獲取該 email 使用者在 SQL上 的 m_id (PK)
     print(m_id)
     to_sql.insertsql_dailyrecord(m_id, daily_data)  # 導入 自訂套件 to_sql 傳入每日飲食紀錄表的資料
-    # to_sql.SQLcommit("insert")    # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
-    # recommend.do_difference(m_id)  # 導入自訂套件 recommend 產生新的差值表
-    # kafkaProducer_dailyEat.to_kafka(m_id)  # 導入自訂套件 kafkaProducer_dailyEat 傳入每日飲食紀錄表的資料進 kafka
+    to_sql.SQLcommit("insert")                      # commit 在自訂套件 to_sql 中下的所有 SQL INSERT 指令
+    daily_nutrients.do_daily_nutrients(m_id, daily_data)        #呼叫 daily_nutrients中的函式
+    everyday_difference.do_difference(m_id)         # 導入自訂套件 recommend 產生新的差值表
+    # kafkaProducer_dailyEat.to_kafka(m_id)         # 導入自訂套件 kafkaProducer_dailyEat 傳入每日飲食紀錄表的資料進 kafka
+
 
 
 #▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆#
@@ -337,9 +365,8 @@ def kibana_week():
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True,port=port,host="0.0.0.0")
+    app.run(port=port,host="0.0.0.0")
     # app.run(debug=True)
-
 
 
 

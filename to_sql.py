@@ -10,6 +10,14 @@ password = sql_acount.login()[1]    # 密碼存放在另外位置
 db = "i_member"                     # 選擇在 MySQL 上你操作時要用的 DataBase
 connection = pymysql.connect(host=host, port=port, user=user, passwd=password, db=db, charset="utf8")   # 搭起 GCP Cloud SQL(MySQL) 橋梁
 
+def check_mid(m_id):
+    sql = f"""
+    SELECT m_id FROM i_member.demand_schedule WHERE m_id = "{m_id}";    
+    """
+    cursor = connection.cursor()    # 可以把這當作操作MySQL時，你的鍵盤滑鼠 / 或者暫時存放 SQL 指令的桶子
+    cursor.execute(sql)             # 執行 SQL 指令，此時指令還處在暫存狀態，因為尚未 commit
+    m_id = cursor.fetchone()[0]     # 執行 SQL 指令，從 SQL 獲取 m_id
+    return m_id
 
 
 def search_mid(email):
